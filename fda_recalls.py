@@ -8,6 +8,7 @@ import csv
 
 def ytLookup(businessName):
 
+    ##Uses YellowPages api to look up address 
     baseURL = "http://api2.yp.com/listings/v1/search"
     params = {
         "key": "mxz8q66mxc",
@@ -36,11 +37,13 @@ def ytLookup(businessName):
 
 
 def singleRecallPageParse(url, lookup, preJS, year):
+    ## Takes url of individual recall announcement page 
     out = {}
     r = requests.get(url)
     out["businessName"] = "Not Found"
     soup = BeautifulSoup(r.text)
 
+    #Different parsing patterns for pre-Javascript and post-Javascript page formats 
     if preJS:
         body_table = soup.find('div', class_="body")
         body_row = body_table.table.find_all('tr', recursive=False)[-1]
@@ -81,6 +84,9 @@ def singleRecallPageParse(url, lookup, preJS, year):
     lookupkeys = lookup.keys()
     lookupset = set(lookupkeys)
 
+    ## Uses lookup dictionary of words that correspond to cow/chicken/pork products
+    ## Codes as strict binary: word in that group exists or does not. 
+    ## Multiple groups can exist on one page 
     for paragraph in paragraphs[2:]:
         nopunc = re.sub(',:;.?!-_=~', '', paragraph)
         paragraphwords = set(el.lower() for el in nopunc.split(' '))
@@ -99,6 +105,8 @@ def singleRecallPageParse(url, lookup, preJS, year):
 
 
 def fdaRecallParse(url, preJS, current=False):
+
+    ##Uses post-Javascript dryscrape library 
     session = dryscrape.Session()
     session.visit(url)
     response = session.body()
